@@ -3,22 +3,29 @@ import 'package:http/http.dart' as http;
 import '../models/post.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://jsonplaceholder.typicode.com';
+  final String _baseUrl = 'https://jsonplaceholder.typicode.com';
 
-  Future<List<Post>> getPosts() async {
-    final response = await http.get(Uri.parse('$baseUrl/posts'));
+  Future<List<Post>> fetchPosts() async {
+    final response = await http.get(Uri.parse('$_baseUrl/posts'));
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonData = json.decode(response.body);
-      return jsonData.map((json) => Post.fromJson(json)).toList();
+      final List<dynamic> postsJson = json.decode(response.body);
+      return postsJson
+          .map((json) => Post(
+                id: json['id'],
+                title: json['title'],
+                body: json['body'],
+                userId: json['userId'],
+              ))
+          .toList();
     } else {
-      throw Exception('Помилка завантаження постів');
+      throw Exception('Failed to fetch posts');
     }
   }
 
   Future<Post> createPost(String title, String body) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/posts'),
+      Uri.parse('$_baseUrl/posts'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'title': title,
@@ -35,7 +42,7 @@ class ApiService {
   }
 
   Future<void> deletePost(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/posts/$id'));
+    final response = await http.delete(Uri.parse('$_baseUrl/posts/$id'));
 
     if (response.statusCode != 200) {
       throw Exception('Помилка видалення поста');
@@ -44,7 +51,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getComments(int postId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/posts/$postId/comments'),
+      Uri.parse('$_baseUrl/posts/$postId/comments'),
     );
 
     if (response.statusCode == 200) {

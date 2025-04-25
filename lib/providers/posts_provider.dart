@@ -6,6 +6,7 @@ import '../models/post.dart';
 import '../services/api_service.dart';
 
 class PostsProvider with ChangeNotifier {
+  final String _baseUrl = 'https://jsonplaceholder.typicode.com';
   final ApiService _apiService = ApiService();
   List<Post> _posts = [];
   bool _isLoading = false;
@@ -27,37 +28,21 @@ class PostsProvider with ChangeNotifier {
   }
 
   Future<void> fetchPosts() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
+    print('Fetching posts...');
     try {
-      print('Fetching posts...');
-      final response = await http.get(
-        Uri.parse('https://jsonplaceholder.typicode.com/posts'),
-      );
+      // Save local posts (posts with ID >= 1000)
+      final localPosts = _posts.where((post) => post.id >= 1000).toList();
 
-      if (response.statusCode == 200) {
-        final List<dynamic> postsJson = json.decode(response.body);
-        // Зберігаємо існуючі локальні пости
-        final localPosts = _posts.where((post) => post.id >= 1000).toList();
-        // Оновлюємо пости з API
-        _posts = postsJson.map((json) => Post.fromJson(json)).toList();
-        // Додаємо локальні пости назад
-        _posts.insertAll(0, localPosts);
-        print(
-            'Fetched ${_posts.length} posts (including ${localPosts.length} local posts)');
-        _error = null;
-      } else {
-        _error = 'Failed to load posts';
-        print('Failed to load posts: ${response.statusCode}');
-      }
-    } catch (e) {
-      _error = e.toString();
-      print('Error fetching posts: $e');
-    } finally {
-      _isLoading = false;
+      // Fetch remote posts
+      final remotePosts = await _apiService.fetchPosts();
+
+      // Combine remote and local posts
+      _posts = [...remotePosts, ...localPosts];
       notifyListeners();
+      print('Posts fetched successfully. Total posts: ${_posts.length}');
+    } catch (error) {
+      print('Error fetching posts: $error');
+      throw Exception('Failed to fetch posts');
     }
   }
 
@@ -136,59 +121,55 @@ class PostsProvider with ChangeNotifier {
     final postIndex = _posts.indexWhere((post) => post.id == id);
     print('Found post at index: $postIndex');
 
-    if (postIndex >= 0) {
-      final oldPost = _posts[postIndex];
-      print('Old post title: ${oldPost.title}');
-      print('New title: $title');
-
-      final updatedPost = Post(
-        id: id,
-        userId: oldPost.userId,
-        title: title,
-        body: body,
-      );
-
-      try {
-        // Якщо це локальний пост (id >= 1000), оновлюємо тільки локально
-        if (id >= 1000) {
-          print('Editing local post with ID: $id');
-          _posts[postIndex] = updatedPost;
-          notifyListeners();
-          print('Local post updated successfully');
-          return;
-        }
-
-        // Для не локальних постів спочатку робимо запит на сервер
-        print('Sending edit request for remote post ID: $id');
-        final response = await http.put(
-          Uri.parse('https://jsonplaceholder.typicode.com/posts/$id'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'id': id,
-            'title': title,
-            'body': body,
-            'userId': oldPost.userId,
-          }),
-        );
-
-        print('Server response status: ${response.statusCode}');
-
-        if (response.statusCode == 200) {
-          // Оновлюємо пост локально тільки після успішного оновлення на сервері
-          _posts[postIndex] = updatedPost;
-          notifyListeners();
-          print('Remote post updated successfully');
-        } else {
-          print('Failed to update post on server');
-          throw Exception('Failed to update post');
-        }
-      } catch (e) {
-        print('Error during post update: $e');
-        throw Exception('Failed to update post: $e');
-      }
-    } else {
+    if (postIndex == -1) {
       print('Post not found with ID: $id');
       throw Exception('Post not found');
+    }
+
+    final oldPost = _posts[postIndex];
+    print('Old post title: ${oldPost.title}');
+    print('New title: $title');
+
+    final updatedPost = Post(
+      id: oldPost.id,
+      title: title,
+      body: body,
+      userId: oldPost.userId,
+    );
+
+    try {
+      if (id >= 1000) {
+        print('Editing local post with ID: $id');
+        _posts[postIndex] = updatedPost;
+        notifyListeners();
+        print('Local post updated successfully');
+        return;
+      }
+
+      final response = await http.put(
+        Uri.parse('https://jsonplaceholder.typicode.com/posts/$id'),
+        body: json.encode({
+          'id': id,
+          'title': title,
+          'body': body,
+          'userId': oldPost.userId,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        _posts[postIndex] = updatedPost;
+        notifyListeners();
+        print('Remote post updated successfully');
+      } else {
+        print('Failed to update remote post. Status: ${response.statusCode}');
+        throw Exception('Failed to update post');
+      }
+    } catch (error) {
+      print('Error updating post: $error');
+      _posts[postIndex] = oldPost;
+      notifyListeners();
+      rethrow;
     }
   }
 
