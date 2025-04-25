@@ -1,5 +1,5 @@
 name: doit_2
-description: A Flutter application for managing posts using Gluestack UI.
+description: A Flutter application for managing posts.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -12,10 +12,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.5
   http: ^1.1.0
-  gluestack_ui:
-    git:
-      url: https://github.com/gluestack/gluestack-ui-flutter.git
-      ref: main
   flutter_svg: ^2.0.7
   shared_preferences: ^2.2.0
 

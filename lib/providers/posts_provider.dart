@@ -130,11 +130,36 @@ class PostsProvider with ChangeNotifier {
   }
 
   Future<void> editPost(int id, String title, String body) async {
+    print('Starting to edit post with ID: $id');
+    print('Current posts count: ${_posts.length}');
+
     final postIndex = _posts.indexWhere((post) => post.id == id);
+    print('Found post at index: $postIndex');
+
     if (postIndex >= 0) {
       final oldPost = _posts[postIndex];
+      print('Old post title: ${oldPost.title}');
+      print('New title: $title');
+
+      final updatedPost = Post(
+        id: id,
+        userId: oldPost.userId,
+        title: title,
+        body: body,
+      );
 
       try {
+        // Якщо це локальний пост (id >= 1000), оновлюємо тільки локально
+        if (id >= 1000) {
+          print('Editing local post with ID: $id');
+          _posts[postIndex] = updatedPost;
+          notifyListeners();
+          print('Local post updated successfully');
+          return;
+        }
+
+        // Для не локальних постів спочатку робимо запит на сервер
+        print('Sending edit request for remote post ID: $id');
         final response = await http.put(
           Uri.parse('https://jsonplaceholder.typicode.com/posts/$id'),
           headers: {'Content-Type': 'application/json'},
@@ -146,21 +171,24 @@ class PostsProvider with ChangeNotifier {
           }),
         );
 
+        print('Server response status: ${response.statusCode}');
+
         if (response.statusCode == 200) {
-          final updatedPost = Post(
-            id: id,
-            userId: oldPost.userId,
-            title: title,
-            body: body,
-          );
+          // Оновлюємо пост локально тільки після успішного оновлення на сервері
           _posts[postIndex] = updatedPost;
           notifyListeners();
+          print('Remote post updated successfully');
         } else {
+          print('Failed to update post on server');
           throw Exception('Failed to update post');
         }
       } catch (e) {
-        rethrow;
+        print('Error during post update: $e');
+        throw Exception('Failed to update post: $e');
       }
+    } else {
+      print('Post not found with ID: $id');
+      throw Exception('Post not found');
     }
   }
 
