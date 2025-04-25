@@ -13,6 +13,7 @@ class PostsScreen extends StatefulWidget {
 
 class _PostsScreenState extends State<PostsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -20,7 +21,17 @@ class _PostsScreenState extends State<PostsScreen> {
     _loadPosts();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      _loadPosts();
+    }
+  }
+
   Future<void> _loadPosts() async {
+    if (!mounted) return;
     await context.read<PostsProvider>().fetchPosts();
   }
 
@@ -36,6 +47,12 @@ class _PostsScreenState extends State<PostsScreen> {
       drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Список постів'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadPosts,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -90,12 +107,8 @@ class _PostsScreenState extends State<PostsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Чекаємо результат навігації і оновлюємо список постів
-          await Navigator.pushNamed(context, '/create-post');
-          if (mounted) {
-            _loadPosts();
-          }
+        onPressed: () {
+          Navigator.of(context).pushNamed('/create-post');
         },
         child: const Icon(Icons.add),
       ),
