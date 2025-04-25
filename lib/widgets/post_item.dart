@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/post.dart';
 import '../providers/posts_provider.dart';
 import '../screens/post_details_screen.dart';
+import '../screens/edit_post_screen.dart';
 
 class PostItem extends StatelessWidget {
   final Post post;
@@ -66,6 +67,17 @@ class PostItem extends StatelessWidget {
                         },
                       ),
                       const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPostScreen(post: post),
+                            ),
+                          );
+                        },
+                      ),
                       IconButton(
                         icon: const Icon(Icons.delete),
                         color: theme.colorScheme.error,

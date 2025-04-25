@@ -129,6 +129,41 @@ class PostsProvider with ChangeNotifier {
     }
   }
 
+  Future<void> editPost(int id, String title, String body) async {
+    final postIndex = _posts.indexWhere((post) => post.id == id);
+    if (postIndex >= 0) {
+      final oldPost = _posts[postIndex];
+
+      try {
+        final response = await http.put(
+          Uri.parse('https://jsonplaceholder.typicode.com/posts/$id'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'id': id,
+            'title': title,
+            'body': body,
+            'userId': oldPost.userId,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final updatedPost = Post(
+            id: id,
+            userId: oldPost.userId,
+            title: title,
+            body: body,
+          );
+          _posts[postIndex] = updatedPost;
+          notifyListeners();
+        } else {
+          throw Exception('Failed to update post');
+        }
+      } catch (e) {
+        rethrow;
+      }
+    }
+  }
+
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
