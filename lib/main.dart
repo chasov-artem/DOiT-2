@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'providers/posts_provider.dart';
 import 'screens/posts_screen.dart';
 import 'screens/create_post_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -17,6 +19,7 @@ class MyApp extends StatelessWidget {
       create: (context) => PostsProvider(),
       child: MaterialApp(
         title: 'DOiT-2',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),

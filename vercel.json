@@ -2,14 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "build/web",
+      "src": "build/web/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "handle": "filesystem"
-    },
     {
       "src": "/assets/(.*)",
       "dest": "/build/web/assets/$1"
@@ -25,6 +22,14 @@
     {
       "src": "/favicon.png",
       "dest": "/build/web/favicon.png"
+    },
+    {
+      "src": "/flutter.js",
+      "dest": "/build/web/flutter.js"
+    },
+    {
+      "src": "/main.dart.js",
+      "dest": "/build/web/main.dart.js"
     },
     {
       "src": "/(.*)",
