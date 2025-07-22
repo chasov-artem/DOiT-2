@@ -4,6 +4,7 @@ import '../models/post.dart';
 import '../providers/posts_provider.dart';
 import '../services/api_service.dart';
 import 'edit_post_screen.dart';
+import '../widgets/comments_modal.dart';
 
 class PostDetailsScreen extends StatelessWidget {
   final Post post;
@@ -14,69 +15,9 @@ class PostDetailsScreen extends StatelessWidget {
   });
 
   void _showComments(BuildContext context) async {
-    final apiService = ApiService();
-
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
-        future: apiService.getComments(post.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Помилка завантаження коментарів',
-                style: TextStyle(color: Colors.red[700]),
-              ),
-            );
-          }
-
-          final comments = snapshot.data!;
-          return Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Коментарі',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: comments.length,
-                    separatorBuilder: (_, __) => const Divider(),
-                    itemBuilder: (context, index) {
-                      final comment = comments[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              comment['name'] as String,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(comment['body'] as String),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+      builder: (context) => CommentsModal(postId: post.id),
     );
   }
 
