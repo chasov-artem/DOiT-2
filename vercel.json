@@ -7,6 +7,10 @@
     { "src": "/favicon.png", "dest": "/favicon.png" },
     { "src": "/flutter.js", "dest": "/flutter.js" },
     { "src": "/main.dart.js", "dest": "/main.dart.js" },
+    {
+      "src": "/flutter_service_worker.js",
+      "dest": "/flutter_service_worker.js"
+    },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
