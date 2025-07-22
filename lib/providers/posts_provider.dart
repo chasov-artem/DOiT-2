@@ -28,7 +28,6 @@ class PostsProvider with ChangeNotifier {
   }
 
   Future<void> fetchPosts() async {
-    print('Fetching posts...');
     try {
       // Save local posts (posts with ID >= 1000)
       final localPosts = _posts.where((post) => post.id >= 1000).toList();
@@ -39,17 +38,12 @@ class PostsProvider with ChangeNotifier {
       // Combine remote and local posts
       _posts = [...remotePosts, ...localPosts];
       notifyListeners();
-      print('Posts fetched successfully. Total posts: ${_posts.length}');
     } catch (error) {
-      print('Error fetching posts: $error');
       throw Exception('Failed to fetch posts');
     }
   }
 
   Future<void> createPost(String title, String body) async {
-    print('Creating post with title: $title');
-    print('Current posts count: ${_posts.length}');
-
     try {
       final response = await http.post(
         Uri.parse('https://jsonplaceholder.typicode.com/posts'),
@@ -61,9 +55,6 @@ class PostsProvider with ChangeNotifier {
         }),
       );
 
-      print('Create post response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 201) {
         // Створюємо новий пост з локальним ID
         final newPost = Post(
@@ -73,18 +64,13 @@ class PostsProvider with ChangeNotifier {
           body: body,
         );
 
-        print('New post created with local ID: ${newPost.id}');
         _posts.insert(0, newPost);
-        print('Posts count after insert: ${_posts.length}');
 
         notifyListeners();
-        print('Notified listeners');
       } else {
-        print('Failed to create post: ${response.statusCode}');
         throw Exception('Failed to create post');
       }
     } catch (e) {
-      print('Error creating post: $e');
       rethrow;
     }
   }
@@ -115,20 +101,13 @@ class PostsProvider with ChangeNotifier {
   }
 
   Future<void> editPost(int id, String title, String body) async {
-    print('Starting to edit post with ID: $id');
-    print('Current posts count: ${_posts.length}');
-
     final postIndex = _posts.indexWhere((post) => post.id == id);
-    print('Found post at index: $postIndex');
 
     if (postIndex == -1) {
-      print('Post not found with ID: $id');
       throw Exception('Post not found');
     }
 
     final oldPost = _posts[postIndex];
-    print('Old post title: ${oldPost.title}');
-    print('New title: $title');
 
     final updatedPost = Post(
       id: oldPost.id,
@@ -139,10 +118,8 @@ class PostsProvider with ChangeNotifier {
 
     try {
       if (id >= 1000) {
-        print('Editing local post with ID: $id');
         _posts[postIndex] = updatedPost;
         notifyListeners();
-        print('Local post updated successfully');
         return;
       }
 
@@ -160,13 +137,10 @@ class PostsProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         _posts[postIndex] = updatedPost;
         notifyListeners();
-        print('Remote post updated successfully');
       } else {
-        print('Failed to update remote post. Status: ${response.statusCode}');
         throw Exception('Failed to update post');
       }
     } catch (error) {
-      print('Error updating post: $error');
       _posts[postIndex] = oldPost;
       notifyListeners();
       rethrow;

@@ -51,7 +51,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
       );
 
-      Navigator.of(context).pop();
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      } else {
+        Navigator.of(context).pushReplacementNamed('/');
+      }
     } catch (error) {
       if (!mounted) return;
 
