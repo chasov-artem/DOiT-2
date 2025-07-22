@@ -7,33 +7,12 @@
     }
   ],
   "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/build/web/assets/$1"
-    },
-    {
-      "src": "/icons/(.*)",
-      "dest": "/build/web/icons/$1"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/build/web/manifest.json"
-    },
-    {
-      "src": "/favicon.png",
-      "dest": "/build/web/favicon.png"
-    },
-    {
-      "src": "/flutter.js",
-      "dest": "/build/web/flutter.js"
-    },
-    {
-      "src": "/main.dart.js",
-      "dest": "/build/web/main.dart.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/build/web/index.html"
-    }
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/icons/(.*)", "dest": "/icons/$1" },
+    { "src": "/manifest.json", "dest": "/manifest.json" },
+    { "src": "/favicon.png", "dest": "/favicon.png" },
+    { "src": "/flutter.js", "dest": "/flutter.js" },
+    { "src": "/main.dart.js", "dest": "/main.dart.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
