@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gluestack_ui/gluestack_ui.dart';
 import '../models/comment.dart';
 import '../services/api_service.dart';
 
@@ -16,7 +15,7 @@ class CommentsModal extends StatefulWidget {
 }
 
 class _CommentsModalState extends State<CommentsModal> {
-  late Future<List<Comment>> _commentsFuture;
+  late Future<List<Map<String, dynamic>>> _commentsFuture;
 
   @override
   void initState() {
@@ -32,65 +31,49 @@ class _CommentsModalState extends State<CommentsModal> {
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GSHeading(
-              text: 'Коментарі до поста #${widget.postId}',
-              size: GSHeadingSizes.$lg,
+            Text(
+              'Коментарі',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            FutureBuilder<List<Comment>>(
+            FutureBuilder<List<Map<String, dynamic>>>(
               future: _commentsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: GSSpinner(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return GSText(
-                    text: 'Помилка завантаження коментарів',
-                    style: GSStyle(
-                      textStyle: const TextStyle(color: Colors.red),
-                    ),
+                  return Text(
+                    'Помилка завантаження коментарів',
+                    style: TextStyle(color: Colors.red[700]),
                   );
                 }
-                final comments = snapshot.data!;
+                final comments = snapshot.data ?? [];
+                if (comments.isEmpty) {
+                  return const Text('Коментарів немає');
+                }
                 return SizedBox(
                   height: 300,
-                  child: ListView.builder(
+                  child: ListView.separated(
+                    shrinkWrap: true,
                     itemCount: comments.length,
+                    separatorBuilder: (_, __) => const Divider(),
                     itemBuilder: (context, index) {
                       final comment = comments[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            GSText(
-                              text: comment.name,
-                              style: GSStyle(
-                                textStyle: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            Text(
+                              comment['name'] ?? '',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            const Divider(),
-                            GSText(text: comment.body),
-                            const SizedBox(height: 8),
-                            GSText(
-                              text: comment.email,
-                              style: GSStyle(
-                                textStyle: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
+                            const SizedBox(height: 4),
+                            Text(comment['body'] ?? ''),
                           ],
                         ),
                       );
@@ -100,9 +83,12 @@ class _CommentsModalState extends State<CommentsModal> {
               },
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Закрити'),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Закрити'),
+              ),
             ),
           ],
         ),
