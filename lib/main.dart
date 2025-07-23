@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => PostsProvider(),
       child: MaterialApp(
-        title: 'DOiT-2',
+        title: 'Posts app2',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
