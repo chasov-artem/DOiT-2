@@ -14,7 +14,7 @@ class AppDrawer extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'DOiT-2',
+                'Posts app2',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                     ),
